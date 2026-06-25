@@ -1,0 +1,9 @@
+# Netlify-Konfiguration für das Beta-Verkaufstext-Tool.
+# Statische Seite (index.html) + eine Serverless-Funktion, die Claude aufruft.
+#
+# Vor dem Deploy in Netlify hinterlegen (Site settings -> Environment variables):
+#   ANTHROPIC_API_KEY = sk-ant-...   (Key von console.anthropic.com)
+
+[build]
+  publish = "."
+  functions = "netlify/functions"

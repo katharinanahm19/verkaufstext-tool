@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beta-Verkaufstext-Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+html,body,div,span,h1,h2,p,label,textarea,button{font-family:'Montserrat',Arial,sans-serif!important}
+:root{--ar:#bd8892;--rh:#e5cfd3;--dg:#1a4535;--hg:#4e9c61;--bg:#fef4ee;--tx:#2a1a1a;--mu:#7a6060;--rd:#c0392b}
+*{box-sizing:border-box;margin:0;padding:0}
+.tool-wrap{background:var(--bg);padding:1.75rem 1rem 5rem;border-radius:12px}
+.page{max-width:640px;margin:0 auto}
+.hdr{text-align:center;margin-bottom:1.75rem}
+.brand{font-size:9px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--ar);display:block;margin-bottom:.6rem}
+.hdr h1{font-size:1.5rem;font-weight:800;color:var(--dg);letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem}
+.hdr p{font-size:12px;color:var(--mu);line-height:1.6;max-width:400px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fu .2s ease forwards}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 2px 18px rgba(26,69,53,.07);margin-bottom:.6rem}
+.badge{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ar);background:rgba(189,136,146,.1);border-radius:100px;padding:3px 9px;margin-bottom:.65rem}
+.stitle{font-size:1rem;font-weight:800;color:var(--dg);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.35rem}
+.sdesc{font-size:12px;color:var(--mu);line-height:1.6;margin-bottom:.9rem}
+.hint{background:var(--bg);border-left:3px solid var(--ar);padding:.55rem .75rem;border-radius:0 7px 7px 0;font-size:11px;color:var(--mu);margin-bottom:.9rem;line-height:1.5}
+.hint strong{color:var(--ar);font-weight:700}
+.prog{display:flex;align-items:center;margin-bottom:1.2rem}
+.pd{width:26px;height:26px;border-radius:50%;border:2px solid var(--rh);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--mu);transition:all .3s;flex-shrink:0}
+.pd.a{background:var(--ar);border-color:var(--ar);color:#fff}
+.pd.d{background:var(--dg);border-color:var(--dg);color:#fff}
+.pd.d::before{content:'✓';font-size:9px}.pd.d span{display:none}
+.pl{flex:1;height:2px;background:var(--rh)}.pl.d{background:var(--dg)}
+.field{margin-bottom:.75rem}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--tx);margin-bottom:4px}
+.field textarea{width:100%;padding:9px 11px;border:1.5px solid var(--rh);border-radius:7px;font-family:'Montserrat',Arial,sans-serif!important;font-size:12px;color:var(--tx);background:#fff;outline:none;transition:border-color .2s;line-height:1.5;resize:vertical;min-height:90px}
+.field textarea:focus{border-color:var(--ar);box-shadow:0 0 0 2px rgba(189,136,146,.1)}
+.brow{display:flex;gap:8px;margin-top:1.2rem}
+.bp{flex:1;padding:11px 18px;background:var(--dg);color:#fff;border:none;border-radius:7px;font-family:'Montserrat',Arial,sans-serif!important;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.bp:hover{background:#215e3f;transform:translateY(-1px)}
+.bp:disabled{background:#aaa;cursor:not-allowed;transform:none}
+.bb{padding:11px 14px;background:transparent;color:var(--mu);border:1.5px solid var(--rh);border-radius:7px;font-family:'Montserrat',Arial,sans-serif!important;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.bb:hover{border-color:var(--ar);color:var(--ar)}
+.bl,.bd,.bg{display:block;width:100%;padding:10px;border-radius:7px;cursor:pointer;font-family:'Montserrat',Arial,sans-serif!important;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:all .2s;margin-bottom:6px;text-align:center}
+.bl{background:transparent;color:var(--mu);border:1.5px solid var(--rh)}.bl:hover,.bl.ok{border-color:var(--hg);color:var(--hg)}
+.bd{background:rgba(26,69,53,.07);color:var(--dg);border:none}.bd:hover{background:rgba(26,69,53,.14)}
+.bg{background:rgba(189,136,146,.1);color:var(--ar);border:none}.bg:hover{background:rgba(189,136,146,.2)}
+/* Upload */
+.upa{border:2px dashed var(--rh);border-radius:9px;padding:1.3rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(229,207,211,.07);margin-bottom:.5rem}
+.upa:hover{border-color:var(--ar)}.upa.done{border-color:var(--hg);background:rgba(78,156,97,.06)}
+.upl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ar);margin-bottom:.2rem}
+.ups{font-size:11px;color:var(--hg);font-weight:600;margin-top:.35rem}
+.ups.h{display:none}
+input[type=file]{display:none}
+/* Loading */
+.load{text-align:center;padding:2rem 1rem}
+.spin{width:40px;height:40px;border:3px solid var(--rh);border-top-color:var(--ar);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 1rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+.lt{font-size:.9rem;font-weight:800;color:var(--dg);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.4rem}
+.ls{font-size:11px;color:var(--mu)}
+.lsteps{margin-top:1rem;text-align:left;max-width:320px;margin-left:auto;margin-right:auto}
+.lstep{font-size:11px;color:var(--mu);padding:6px 0;border-bottom:1px solid var(--rh);display:flex;align-items:center;gap:6px}
+.lstep.a{color:var(--dg);font-weight:700}.lstep.d{color:var(--hg)}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--rh);flex-shrink:0}
+.lstep.a .ldot{background:var(--ar)}.lstep.d .ldot{background:var(--hg)}
+/* Result */
+.rblock{background:var(--bg);border:1.5px solid var(--rh);border-radius:10px;padding:1rem 1.2rem;margin-bottom:.55rem;position:relative}
+.rblock .rl{font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ar);margin-bottom:7px;display:block;padding-right:60px}
+.rblock .rt{font-size:12.5px;line-height:1.7;color:var(--tx);white-space:pre-line}
+.rcopy{position:absolute;top:.7rem;right:.8rem;font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);background:#fff;border:1.5px solid var(--rh);border-radius:6px;padding:4px 8px;cursor:pointer;transition:all .2s}
+.rcopy:hover,.rcopy.ok{border-color:var(--hg);color:var(--hg)}
+.ph{background:rgba(224,168,0,.1);border-left:3px solid #e0a800;border-radius:0 6px 6px 0;padding:.55rem .7rem;font-size:11px;color:#7a5a00;line-height:1.5;margin-bottom:.9rem}
+.divr{height:1px;background:var(--rh);margin:1rem 0}
+.eb{background:#fdecea;border:1.5px solid #f0a090;border-radius:8px;padding:.8rem;margin-bottom:.8rem;font-size:12px;color:var(--rd);display:none}
+.eb.show{display:block}
+/* Chat */
+.chat-box{background:#fff;border:2px solid var(--rh);border-radius:12px;padding:1.25rem;margin-top:.75rem}
+.chat-title{font-size:11px;font-weight:800;color:var(--dg);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem}
+.chat-desc{font-size:11px;color:var(--mu);margin-bottom:.75rem;line-height:1.5}
+.thinking{display:none;align-items:center;gap:4px;padding:.5rem 0}
+.thinking.show{display:flex}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ar);animation:blink 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.chat-msgs{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.75rem;max-height:260px;overflow-y:auto}
+.msg{font-size:12px;line-height:1.6;padding:.6rem .8rem;border-radius:8px}
+.msg.user{background:var(--dg);color:#fff;margin-left:2rem}
+.msg.ai{background:var(--bg);color:var(--tx);border:1.5px solid var(--rh);margin-right:2rem}
+.chat-input-row{display:flex;gap:8px}
+.chat-input-row textarea{flex:1;padding:9px 11px;border:1.5px solid var(--rh);border-radius:7px;font-family:'Montserrat',Arial,sans-serif!important;font-size:12px;color:var(--tx);background:#fff;outline:none;resize:none;min-height:60px;line-height:1.5}
+.chat-input-row textarea:focus{border-color:var(--ar)}
+.chat-send{padding:10px 16px;background:var(--ar);color:#fff;border:none;border-radius:7px;font-family:'Montserrat',Arial,sans-serif!important;font-size:11px;font-weight:700;cursor:pointer;align-self:flex-end;transition:all .2s;white-space:nowrap}
+.chat-send:hover{background:#a8717a}.chat-send:disabled{background:#ccc;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="tool-wrap">
+<div class="page">
+<div class="hdr"><span class="brand">Launch Sisters</span><h1>Beta-Verkaufstext-Tool</h1><p>Lade deinen Wunschkundenavatar und dein Produktsheet hoch. Das Tool schreibt dir daraus den fertigen Verkaufstext für deine Beta-Anmeldeseite.</p></div>
+
+<!-- S1 AVATAR -->
+<div id="s1" class="screen active"><div class="prog"><div class="pd a"><span>1</span></div><div class="pl"></div><div class="pd"><span>2</span></div><div class="pl"></div><div class="pd"><span>3</span></div></div><div class="card">
+  <div class="badge">Schritt 1 von 3</div><div class="stitle">Dein Wunschkundenavatar</div><p class="sdesc">Lade deinen ausgefüllten Wunschkundenavatar als PDF hoch.</p>
+  <div class="hint"><strong>Was drin steht:</strong> Demografisches · Soziologisches (Werte, erwartete Brand Voice, abschreckende Worte) · Psychografisches (Probleme, Gefühle, Träume, Kaufeinwände). Daraus entstehen Schmerzpunkte, Wunsch und Tonalität.</div>
+  <div class="upa" id="av-a" onclick="document.getElementById('av-i').click()"><div style="font-size:1.5rem;margin-bottom:.3rem">📄</div><div class="upl" id="av-lbl">PDF hochladen</div><div style="font-size:10px;color:var(--mu)">Ausgefüllter Wunschkundenavatar</div><div class="ups h" id="av-s"></div></div>
+  <input type="file" id="av-i" accept=".pdf" onchange="hpdf(this,'av')">
+  <div class="brow"><span style="flex:1"></span><button class="bp" onclick="nx(1)">Weiter →</button></div>
+</div></div>
+
+<!-- S2 PRODUKTSHEET -->
+<div id="s2" class="screen"><div class="prog"><div class="pd d"><span>1</span></div><div class="pl d"></div><div class="pd a"><span>2</span></div><div class="pl"></div><div class="pd"><span>3</span></div></div><div class="card">
+  <div class="badge">Schritt 2 von 3</div><div class="stitle">Dein Produktsheet</div><p class="sdesc">Lade dein ausgefülltes Produktsheet als PDF hoch.</p>
+  <div class="hint"><strong>Was drin steht:</strong> Thema · Ausgangs- und Zielzustand · Ergebnis · Module &amp; Lektionen · Support · Ressourcen · Dauer · Beta-Preis. Daraus entstehen Versprechen, Programm-Vorstellung und Ergebnis.</div>
+  <div class="upa" id="pr-a" onclick="document.getElementById('pr-i').click()"><div style="font-size:1.5rem;margin-bottom:.3rem">📄</div><div class="upl" id="pr-lbl">PDF hochladen</div><div style="font-size:10px;color:var(--mu)">Ausgefülltes Produktsheet</div><div class="ups h" id="pr-s"></div></div>
+  <input type="file" id="pr-i" accept=".pdf" onchange="hpdf(this,'pr')">
+  <div class="brow"><button class="bb" onclick="go('s1')">←</button><button class="bp" onclick="nx(2)">Weiter →</button></div>
+</div></div>
+
+<!-- S3 NOTE -->
+<div id="s3" class="screen"><div class="prog"><div class="pd d"><span>1</span></div><div class="pl d"></div><div class="pd d"><span>2</span></div><div class="pl d"></div><div class="pd a"><span>3</span></div></div><div class="card">
+  <div class="badge">Schritt 3 von 3</div><div class="stitle">Möchtest du mir noch etwas sagen?</div><p class="sdesc">Optional. Hier kannst du alles ergänzen, was nicht in den Dokumenten steht.</p>
+  <div class="hint"><strong>Hilfreich z.B.:</strong> 2-3 Sätze zu dir (für die Vorstellung) · konkrete Workshop-Termine &amp; Uhrzeiten · Bewerbungsfrist · regulärer Preis der nächsten Runde · Teilnehmerzahl · Wünsche zur Tonalität. Lässt du etwas weg, setze ich dafür einen Platzhalter zum Ausfüllen.</div>
+  <div class="field"><label>Deine Ergänzungen (optional)</label><textarea id="note" placeholder="z.B. Ich bin gelernte Physiotherapeutin und zweifache Mama. Workshops dienstags 20 Uhr, Start 3.2. Bewerbungsschluss 30.1. Nächste Runde kostet 349€. Max. 8 Teilnehmerinnen."></textarea></div>
+  <div class="eb" id="err"></div>
+  <div class="brow"><button class="bb" onclick="go('s2')">←</button><button class="bp" onclick="run()">Verkaufstext schreiben →</button></div>
+</div></div>
+
+<!-- LOADING -->
+<div id="load" class="screen"><div class="card"><div class="load">
+  <div class="spin"></div><div class="lt">Dein Verkaufstext entsteht</div><div class="ls">30 bis 60 Sekunden.</div>
+  <div class="lsteps"><div class="lstep a" id="l1"><div class="ldot"></div>Wunschkundenavatar wird gelesen</div><div class="lstep" id="l2"><div class="ldot"></div>Produktsheet wird ausgewertet</div><div class="lstep" id="l3"><div class="ldot"></div>Schmerzpunkte &amp; Wunsch werden destilliert</div><div class="lstep" id="l4"><div class="ldot"></div>Verkaufstext wird geschrieben</div><div class="lstep" id="l5"><div class="ldot"></div>Letzter Schliff</div></div>
+</div></div></div>
+
+<!-- RESULT -->
+<div id="res" class="screen"><div class="card">
+  <div class="badge">Dein Verkaufstext</div><div class="stitle">Fertig für dein JotForm</div>
+  <p class="sdesc">Kopiere die Blöcke einzeln oder komplett in deine Beta-Anmeldeseite. Gelbe Hinweise = von dir auszufüllen.</p>
+  <div class="ph" id="ph-note" style="display:none"></div>
+  <div id="blocks"></div>
+  <div class="divr"></div>
+  <button class="bl" id="cpall" onclick="cpAll()">Alles kopieren</button>
+  <button class="bd" onclick="exDoc()">Als .doc exportieren</button>
+  <div class="chat-box">
+    <div class="chat-title">Weiter optimieren</div>
+    <div class="chat-desc">Gefällt dir ein Block nicht? Schreib es hier und ich passe den Text an.</div>
+    <div class="chat-msgs" id="chat-msgs"></div>
+    <div class="thinking" id="think"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="chat-input-row">
+      <textarea id="chat-in" placeholder="z.B. Block 2 ist zu lang, mach 5 Punkte draus.&#10;z.B. Das Versprechen klingt zu nüchtern, mehr Emotion."></textarea>
+      <button class="chat-send" id="chat-btn" onclick="sendChat()">Senden</button>
+    </div>
+  </div>
+  <button class="bg" style="margin-top:.6rem" onclick="location.reload()">Neu starten</button>
+</div></div>
+
+</div>
+</div>
+<script>
+if(typeof pdfjsLib!=="undefined"){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
+const D={av:'',pr:'',note:''};
+let RAW='', CTX='';
+
+const BLOCKS=[
+  {k:'B1',l:'1 · Versprechen / Transformation'},
+  {k:'B2',l:'2 · Kommt dir das bekannt vor?'},
+  {k:'B3',l:'3 · Dein Wunsch'},
+  {k:'B4',l:'4 · Genau das Richtige für dich'},
+  {k:'B5',l:'5 · Vorstellung von dir'},
+  {k:'B6',l:'6 · Was dich im Programm erwartet'},
+  {k:'B7',l:'7 · Dein Ergebnis'},
+  {k:'B8',l:'8 · Die Beta-Runde'},
+  {k:'B9',l:'9 · Bewirb dich'},
+];
+
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+
+async function hpdf(inp,key){
+  const f=inp.files[0];if(!f)return;
+  const lbl=document.getElementById(key+'-lbl'),s=document.getElementById(key+'-s'),a=document.getElementById(key+'-a');
+  lbl.textContent='Wird gelesen…';
+  try{
+    const ab=await f.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:ab,useWorkerFetch:false,isEvalSupported:false}).promise;
+    let txt='';
+    for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();txt+=c.items.map(x=>x.str).join(' ')+'\n';}
+    D[key]=txt.trim();
+    a.classList.add('done');s.textContent='✓ '+f.name;s.classList.remove('h');lbl.textContent='PDF hochgeladen';
+    if(D[key].length<40){s.textContent='⚠ '+f.name+' — kaum Text erkannt. Ist das PDF ausgefüllt (kein gescanntes Bild)?';s.style.color='#7a5a00';}
+  }catch(e){lbl.textContent='Fehler beim Lesen';s.textContent='Bitte erneut versuchen: '+e.message;s.style.color='var(--rd)';s.classList.remove('h');}
+}
+
+function nx(s){
+  if(s===1){if(!D.av){alert('Bitte lade zuerst deinen Wunschkundenavatar als PDF hoch.');return;}go('s2');}
+  else if(s===2){if(!D.pr){alert('Bitte lade zuerst dein Produktsheet als PDF hoch.');return;}go('s3');}
+}
+
+function pt(t,tag){const m=t.match(new RegExp('\\['+tag+'\\]([\\s\\S]*?)\\[/'+tag+'\\]','i'));return m?m[1].trim():'';}
+
+function lsa(ids){let si=0;return setInterval(()=>{if(si>0)document.getElementById(ids[si-1]).className='lstep d';if(si<ids.length){document.getElementById(ids[si]).className='lstep a';si++;}},6000);}
+
+const VOICE='\n\nSTIMME & STIL (strikt):\n- Schreibe in der Du-Form, warm, direkt, nahbar. Sprich die Leserin persönlich an.\n- Nutze die WORTE der Wunschkundin aus dem Avatar — so, wie sie selbst über ihr Problem und ihren Wunsch spricht. Triff den Schmerz, mach das Ergebnis begehrenswert.\n- Richte die Tonalität nach der im Avatar genannten erwarteten Brand Voice. Vermeide strikt alle dort als abschreckend genannten Worte.\n- KEINE Gedankenstriche (—). Keine Weichmacher ("eigentlich", "vielleicht", "ein Stück weit"). Keine leeren Buzzwords: "revolutionär", "passives Einkommen", "schnell reich", "garantierter Erfolg", "nächstes Level", "Leichtigkeit", "manifestieren", "in die eigene Kraft kommen", "Fülle", "ganzheitlich".\n- Konkret statt vage: echte Situationen, echte Gefühle, echte Ergebnisse aus den Dokumenten. Erfinde KEINE Zahlen, Daten, Preise oder Fakten, die nicht in den Eingaben stehen.\n- Verwende immer echte deutsche Umlaute (ä, ö, ü, ß), niemals Umschreibungen wie ae/oe/ue/ss — auch dann nicht, wenn die hochgeladenen Dokumente Umschreibungen verwenden.\n- Emojis sparsam und funktional (z.B. als Aufzählungszeichen in Listen).';
+
+const PLACEHOLDER_RULE='\n\nFEHLENDE ANGABEN — niemals erfinden, stattdessen Platzhalter in eckigen Klammern setzen, die die Nutzerin ausfüllt:\n- Block 5 (Vorstellung): steht NICHT in den Dokumenten. Wenn die Nutzerin in ihren Ergänzungen etwas zu sich geschrieben hat, formuliere daraus 3-4 Sätze. Sonst: "[Hier stellst du dich vor: 2-3 Sätze — wer du bist, warum dir dieses Thema am Herzen liegt, was dich glaubwürdig macht]".\n- Block 6 (Termine): Nutze die echten Modul-/Lektionsthemen aus dem Produktsheet als Workshop-Titel. Für Daten/Uhrzeiten, die nicht angegeben sind: "[Datum, Uhrzeit]".\n- Block 8 (Preise/Plätze): Beta-Preis aus dem Produktsheet. Regulärer Preis der nächsten Runde, falls nicht angegeben: "[regulärer Preis]". Teilnehmerzahl, falls nicht angegeben: "[z.B. 10]".\n- Block 9 (Frist): Bewerbungsfrist, falls nicht angegeben: "[Bewerbungsschluss: Datum]".';
+
+const FORMAT='\n\nGib den Verkaufstext EXAKT in dieser Struktur aus. Jeder Block in eckigen Tags, dazwischen nichts:\n\n[B1]\nVersprechen/Transformation. 2-4 Sätze. Beginne mit einer Frage oder einem Wunsch der Wunschkundin, dann das Versprechen des Programms (mit Programmnamen).\n[/B1]\n\n[B2]\nÜberschrift-Zeile "Kommt dir das bekannt vor?" dann 6-8 Schmerzpunkte als Liste, jeweils mit "- " beginnend. Jeder Punkt eine konkrete Situation/Gefühl aus dem psychografischen Teil des Avatars, in ihren Worten.\n[/B2]\n\n[B3]\n"Dabei würdest du gerne X, ohne Y." 2-3 Sätze über den Wunsch/Traum der Wunschkundin (aus dem Avatar).\n[/B3]\n\n[B4]\n"Dann ist [Programmname] genau das Richtige für dich." 2-3 Sätze, warum das Programm für genau diese Frau gemacht ist.\n[/B4]\n\n[B5]\nVorstellung der Anbieterin. Siehe Platzhalter-Regel.\n[/B5]\n\n[B6]\n"Was erwartet dich in [Programmname]" Dauer, Format, dann Kennenlerncall + die Workshops mit Titel (aus den Modulen) und [Datum, Uhrzeit]. Danach Hinweise zu Support, Ressourcen und Zeitaufwand aus dem Produktsheet.\n[/B6]\n\n[B7]\n"Das ist dein Ergebnis nach dem Programm:" Liste mit "- ", 4-6 konkrete Ergebnisse (aus Zielzustand + Modul-Lernzielen).\n[/B7]\n\n[B8]\nBeta-Runde: Beta-Preis nennen. Absatz "Du fragst dich, warum das so günstig ist?" mit ehrlicher Erklärung (erster Durchgang, regulärer Preis später). Was du von ihr erwartest (Feedback nach jedem Workshop, Testimonial). Teilnehmerbeschränkung.\n[/B8]\n\n[B9]\nBewerbungs-Aufruf mit Frist. 2-3 Sätze, klarer CTA.\n[/B9]\n\nDanach NUR diese Zeile, falls du Platzhalter gesetzt hast:\n[HINWEIS]\nKurze Liste, was die Nutzerin noch ausfüllen muss.\n[/HINWEIS]';
+
+function buildPrompt(){
+  return 'Du bist eine erfahrene Direct-Response-Copywriterin für Online-Programme im DACH-Raum. Du schreibst den fertigen Verkaufstext für die Beta-Launch-Anmeldeseite (ein JotForm) einer Online-Unternehmerin. Der Text verkauft ihr erstes Beta-Programm an ihre Wunschkundin.\n\n=== WUNSCHKUNDENAVATAR ===\n'+(D.av||'(nicht hochgeladen)').substring(0,9000)+'\n\n=== PRODUKTSHEET (Programm) ===\n'+(D.pr||'(nicht hochgeladen)').substring(0,9000)+'\n\n=== ERGÄNZUNGEN DER NUTZERIN ===\n'+(D.note.trim()||'(keine)')+FORMAT+VOICE+PLACEHOLDER_RULE+'\n\nAlles auf Deutsch, korrekte Groß- und Kleinschreibung.';
+}
+
+function render(){
+  const c=document.getElementById('blocks');c.innerHTML='';
+  BLOCKS.forEach(b=>{
+    const txt=pt(RAW,b.k);if(!txt)return;
+    const div=document.createElement('div');div.className='rblock';
+    div.innerHTML='<button class="rcopy" onclick="cpOne(this,\''+b.k+'\')">Kopieren</button><span class="rl">'+b.l+'</span><div class="rt" id="rt-'+b.k+'"></div>';
+    c.appendChild(div);
+    div.querySelector('#rt-'+b.k).textContent=txt;
+  });
+  const hin=pt(RAW,'HINWEIS');
+  const ph=document.getElementById('ph-note');
+  if(hin){ph.style.display='block';ph.innerHTML='<strong>Noch auszufüllen:</strong><br>'+hin.replace(/\n/g,'<br>');}else{ph.style.display='none';}
+}
+
+async function call(prompt,tokens){
+  const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-opus-4-8',max_tokens:tokens||5000,messages:[{role:'user',content:prompt}]})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||e.error||'HTTP '+r.status);}
+  const d=await r.json();return d.content[0].text;
+}
+
+async function run(){
+  const eb=document.getElementById('err');eb.classList.remove('show');
+  D.note=document.getElementById('note').value;
+  if(!D.av||!D.pr){eb.textContent='Bitte lade beide PDFs hoch (Wunschkundenavatar und Produktsheet).';eb.classList.add('show');return;}
+  go('load');const ids=['l1','l2','l3','l4','l5'];const iv=lsa(ids);
+  const p=buildPrompt();
+  try{
+    RAW=await call(p,5000);
+    clearInterval(iv);ids.forEach(id=>document.getElementById(id).className='lstep d');
+    CTX=p+'\n\nDeine Antwort:\n'+RAW;
+    render();go('res');
+  }catch(e){clearInterval(iv);go('s3');eb.textContent='Fehler: '+e.message;eb.classList.add('show');}
+}
+
+function blockText(k){return pt(RAW,k);}
+function fullText(){return BLOCKS.map(b=>{const t=blockText(b.k);return t?(b.l.toUpperCase()+'\n'+t):'';}).filter(Boolean).join('\n\n\n');}
+
+function cpOne(btn,k){navigator.clipboard.writeText(blockText(k)).then(()=>{const o=btn.textContent;btn.textContent='Kopiert!';btn.classList.add('ok');setTimeout(()=>{btn.textContent=o;btn.classList.remove('ok');},2000);});}
+function cpAll(){navigator.clipboard.writeText(fullText()).then(()=>{const b=document.getElementById('cpall'),o=b.textContent;b.textContent='Kopiert!';b.classList.add('ok');setTimeout(()=>{b.textContent=o;b.classList.remove('ok');},2500);});}
+
+function exDoc(){
+  let body='';
+  BLOCKS.forEach(b=>{const t=blockText(b.k);if(!t)return;body+='<h2>'+b.l+'</h2><div class="bl">'+t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</div>';});
+  const html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Verkaufstext</title><style>body{font-family:Calibri,sans-serif;font-size:11pt;margin:2.5cm;line-height:1.6;color:#2a1a1a}h1{font-size:18pt;color:#1a4535}h2{font-size:12pt;color:#bd8892;margin-top:18pt;border-bottom:1pt solid #e5cfd3;padding-bottom:2pt}.bl{padding:6pt 0}</style></head><body><h1>Mein Beta-Verkaufstext</h1>'+body+'</body></html>';
+  const blob=new Blob([html],{type:'application/msword'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='beta-verkaufstext.doc';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+async function sendChat(){
+  const inEl=document.getElementById('chat-in'),btn=document.getElementById('chat-btn'),msgs=document.getElementById('chat-msgs');
+  const msg=inEl.value.trim();if(!msg)return;if(!RAW){alert('Erst einen Verkaufstext erstellen.');return;}
+  msgs.innerHTML+='<div class="msg user">'+msg.replace(/</g,'&lt;')+'</div>';
+  inEl.value='';btn.disabled=true;btn.textContent='...';document.getElementById('think').classList.add('show');msgs.scrollTop=msgs.scrollHeight;
+  const up=CTX+'\n\nDie Nutzerin möchte folgende Anpassung:\n'+msg+'\n\nGib den KOMPLETTEN Verkaufstext erneut aus, EXAKT im gleichen Format mit allen Tags [B1]…[B9] (und [HINWEIS] falls nötig). Behalte alles bei, was die Nutzerin nicht ändern wollte.'+VOICE+PLACEHOLDER_RULE;
+  try{
+    const raw=await call(up,5000);RAW=raw;CTX=up+'\n\nAntwort:\n'+raw;render();
+    msgs.innerHTML+='<div class="msg ai">Angepasst. Schau dir die Blöcke oben an.</div>';
+    msgs.scrollTop=msgs.scrollHeight;window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){msgs.innerHTML+='<div class="msg ai" style="border-color:var(--rd);color:var(--rd)">Fehler: '+e.message+'</div>';}
+  document.getElementById('think').classList.remove('show');btn.disabled=false;btn.textContent='Senden';
+}
+</script>
+</body>
+</html>
