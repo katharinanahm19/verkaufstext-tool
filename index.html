@@ -10,6 +10,7 @@
 html,body,div,span,h1,h2,p,label,textarea,button{font-family:'Montserrat',Arial,sans-serif!important}
 :root{--ar:#bd8892;--rh:#e5cfd3;--dg:#1a4535;--hg:#4e9c61;--bg:#fef4ee;--tx:#2a1a1a;--mu:#7a6060;--rd:#c0392b}
 *{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)}
 .tool-wrap{background:var(--bg);padding:1.75rem 1rem 5rem;border-radius:12px}
 .page{max-width:640px;margin:0 auto}
 .hdr{text-align:center;margin-bottom:1.75rem}
@@ -279,6 +280,11 @@ async function sendChat(){
   }catch(e){msgs.innerHTML+='<div class="msg ai" style="border-color:var(--rd);color:var(--rd)">Fehler: '+e.message+'</div>';}
   document.getElementById('think').classList.remove('show');btn.disabled=false;btn.textContent='Senden';
 }
+
+// Auto-Hoehe: meldet die echte Inhaltshoehe an die Eltern-Seite (Kurs-iframe), damit kein Weissraum entsteht.
+function postHeight(){try{var h=Math.ceil(document.documentElement.scrollHeight);parent.postMessage({type:'vt-resize',height:h},'*');}catch(e){}}
+window.addEventListener('load',postHeight);
+if(window.ResizeObserver){new ResizeObserver(postHeight).observe(document.body);}else{setInterval(postHeight,800);}
 </script>
 </body>
 </html>
