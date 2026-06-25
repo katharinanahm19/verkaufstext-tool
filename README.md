@@ -6,8 +6,13 @@ Beta-Anmeldeseite (JotForm). Block-für-Block kopierbar, .doc-Export, „Weiter 
 
 ## Architektur
 
-- `index.html` — komplettes Frontend (statisch). Liest die PDFs im Browser, baut den Prompt, ruft `/api/claude`.
-- `netlify/functions/claude.mjs` — Serverless-Proxy. Hält `ANTHROPIC_API_KEY` **serverseitig** (nie im Browser). Modell: Opus 4.8.
+Weil ein Verkaufstext (9 Blöcke) länger als 10 Sekunden braucht und normale Netlify-Functions
+nach 10s abbrechen, läuft die Generierung über eine **Background Function** (bis 15 Min) + Polling:
+
+- `index.html` — Frontend (statisch). Liest die PDFs im Browser, baut den Prompt, startet die Background-Function und pollt den Status.
+- `netlify/functions/generate-background.mjs` — ruft Claude auf (Opus 4.8) und legt das Ergebnis in **Netlify Blobs** ab. Hält `ANTHROPIC_API_KEY` **serverseitig**.
+- `netlify/functions/status.mjs` — gibt das Ergebnis aus Blobs zurück (`pending` / `done` / `error`).
+- `package.json` — Dependency `@netlify/blobs` (Netlify installiert das beim Deploy automatisch).
 - `netlify.toml` — Netlify-Config.
 
 ## Deploy (GitHub → Netlify)

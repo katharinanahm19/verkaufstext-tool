@@ -221,10 +221,22 @@ function render(){
   if(hin){ph.style.display='block';ph.innerHTML='<strong>Noch auszufüllen:</strong><br>'+hin.replace(/\n/g,'<br>');}else{ph.style.display='none';}
 }
 
+function uuid(){try{return crypto.randomUUID();}catch(e){return Date.now()+'-'+Math.random().toString(16).slice(2);}}
+// Startet die Background-Function (umgeht das 10s-Limit) und pollt danach den Status.
 async function call(prompt,tokens){
-  const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-opus-4-8',max_tokens:tokens||5000,messages:[{role:'user',content:prompt}]})});
-  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||e.error||'HTTP '+r.status);}
-  const d=await r.json();return d.content[0].text;
+  const id=uuid();
+  const start=await fetch('/.netlify/functions/generate-background',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,model:'claude-opus-4-8',max_tokens:tokens||5000,messages:[{role:'user',content:prompt}]})});
+  if(start.status!==202&&!start.ok){const e=await start.json().catch(()=>({}));throw new Error(e.error?.message||e.error||'Start fehlgeschlagen (HTTP '+start.status+')');}
+  const deadline=Date.now()+170000; // bis ~2,8 Min warten
+  while(Date.now()<deadline){
+    await new Promise(r=>setTimeout(r,2500));
+    let s;try{s=await fetch('/.netlify/functions/status?id='+encodeURIComponent(id));}catch(e){continue;}
+    if(!s.ok)continue;
+    const j=await s.json().catch(()=>null);if(!j)continue;
+    if(j.status==='done')return j.text;
+    if(j.status==='error')throw new Error(j.error||'Fehler bei der Generierung');
+  }
+  throw new Error('Zeitüberschreitung. Bitte erneut versuchen.');
 }
 
 async function run(){

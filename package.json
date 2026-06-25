@@ -1,0 +1,10 @@
+{
+  "name": "beta-verkaufstext-tool",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Beta-Verkaufstext-Tool — Netlify Functions (Background + Status) für die Verkaufstext-Generierung.",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

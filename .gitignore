@@ -1,0 +1,14 @@
+# Secrets niemals committen
+.env
+.env.*
+*.key
+.secrets/
+
+# Lokales
+.DS_Store
+node_modules/
+.netlify/
+
+# Test-/Hilfsmaterial nicht ins Deploy-Repo
+beispiele-jotform/
+vorlagen/
